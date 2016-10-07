@@ -10,8 +10,7 @@ import java.text.SimpleDateFormat
 import java.util.regex.Matcher
 
 class CourseRowParser {
-  private static final SimpleDateFormat sdfOne = new SimpleDateFormat("EEE K:mma");
-  private static final SimpleDateFormat sdfTwo = new SimpleDateFormat("EEE KK:mma");
+  private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE h:mma");
 
   public static Course parse(Elements tds) {
     String times = tds.get(6).text().replaceAll("\n", "")
@@ -51,40 +50,12 @@ class CourseRowParser {
       String startTime = matcher[0][2]
       String endTime = matcher[0][3]
 
-      SimpleDateFormat parser = (startTime.length() == 6) ? sdfOne : sdfTwo
-
-      Date startDate = parser.parse("$day $startTime")
-      parser = (startTime.length() == 6) ? sdfOne : sdfTwo
-      Date endDate = parser.parse("$day $endTime")
-//      new DateTime(2000,1,,)
-
-      try {
-        new CourseMeeting(start: startDate, end: endDate, interval: new Interval(new DateTime(startDate), new DateTime(endDate)))
-
-      } catch (e) {
-        println it
-        println "start: $startTime"
-        println "end: $endTime"
-        println "wtf"
-      }
+      Date startDate = sdf.parse("$day $startTime")
+      Date endDate = sdf.parse("$day $endTime")
+      new CourseMeeting(start: startDate, end: endDate, interval: new Interval(new DateTime(startDate), new DateTime(endDate)))
     }
 
-    return null
-  }
-
-  private int day (String day) {
-    switch (day) {
-      case "MON":
-        return 1;
-      case "TUE":
-        return 2;
-      case "WED":
-        return 3;
-      case "THU":
-        return 4;
-      case "FRI":
-        return 5;
-    }
   }
 
 }
+
