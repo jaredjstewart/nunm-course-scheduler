@@ -14,7 +14,7 @@ class CourseRowParser {
 
   public static Course parse(Elements tds) {
     String times = tds.get(6).text().replaceAll("\n", "")
-    if (times.contains("TBD")) {
+    if (times.contains("TBD") || times.contains("Unassigned")) {
       return null
     }
     List<CourseMeeting> meetingTimes = parseDatesFrom(times)
@@ -28,6 +28,7 @@ class CourseRowParser {
     String name = matcher[0][1]
     String id = matcher[0][2]
 
+
     return new Course(name: name,
       id: id,
       meetings: meetingTimes,
@@ -38,13 +39,14 @@ class CourseRowParser {
 
   private static isFull(String seats) {
     List<String> tokens = seats.tokenize("/")
-    return Integer.valueOf(tokens.get(0)) > Integer.valueOf(tokens.get(1))
+    return Integer.valueOf(tokens.get(0)) >= Integer.valueOf(tokens.get(1))
   }
 
   private static List<CourseMeeting> parseDatesFrom(String times) {
     String regex = /([A-Z]{3})\s*([\d:].*)-([\d:].*)/
 
     times.tokenize(',').collect {
+      try {
       Matcher matcher = (it =~ regex)
       String day = matcher[0][1]
       String startTime = matcher[0][2]
@@ -52,7 +54,12 @@ class CourseRowParser {
 
       Date startDate = sdf.parse("$day $startTime")
       Date endDate = sdf.parse("$day $endTime")
-      new CourseMeeting(start: startDate, end: endDate, interval: new Interval(new DateTime(startDate), new DateTime(endDate)))
+
+
+        new CourseMeeting(start: startDate, end: endDate, interval: new Interval(new DateTime(startDate), new DateTime(endDate)))
+      } catch (e){
+        e.printStackTrace()
+      }
     }
 
   }
