@@ -14,5 +14,8 @@ dependencies {
     compile group: 'org.jsoup', name: 'jsoup', version: '1.9.2'
     compile group: 'org.codehaus.groovy', name: 'groovy-all', version: '2.4.7'
     compile group: 'joda-time', name: 'joda-time', version: '2.0'
+    compile 'com.google.api-client:google-api-client:1.22.0'
+    compile 'com.google.oauth-client:google-oauth-client-jetty:1.22.0'
+    compile 'com.google.apis:google-api-services-calendar:v3-rev214-1.22.0'
     testCompile group: 'junit', name: 'junit', version: '4.11'
 }
