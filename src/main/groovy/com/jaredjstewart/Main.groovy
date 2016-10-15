@@ -29,7 +29,7 @@ class Main {
       }
     }
 
-    courses = courses.findAll {desiredCourseIds.contains(it.id) && !it.full}
+    courses = courses.findAll {desiredCourseIds.contains(it.id) }//&& !it.full}
 
     Map<String, List<Course>> possibleCourses = [:]
     for (String courseId :desiredCourseIds) {
@@ -40,9 +40,11 @@ class Main {
 
     def workingCombos = combinations.findAll { !hasConflicts(it)}
 
-   workingCombos.each {
-     println it
-   }
+    CalendarQuickStart calendarQuickStart = new CalendarQuickStart();
+      Course course = workingCombos.take(1).first().first();
+//    Calendar createdCalendar = calendarQuickStart.createCalendar("numnCourseScheduler");
+   calendarQuickStart.createCalendarAndInsertCourse(course);
+
   }
 
   private static boolean hasConflicts(List<Course> combination) {

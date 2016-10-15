@@ -12,8 +12,11 @@ import com.google.api.client.json.JsonFactory;
 import com.google.api.client.util.store.FileDataStoreFactory;
 import com.google.api.client.util.DateTime;
 
-import com.google.api.services.calendar.CalendarScopes;
+import com.google.api.services.calendar.*;
+import com.google.api.services.calendar.Calendar;
 import com.google.api.services.calendar.model.*;
+import com.jaredjstewart.model.Course;
+import com.jaredjstewart.model.CourseMeeting;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -25,15 +28,13 @@ public class CalendarQuickStart {
     /**
      * Application name.
      */
-    private static final String APPLICATION_NAME =
-            "Google Calendar API Java Quickstart";
+    private static final String APPLICATION_NAME = "Nunm Course Scheduler";
 
     /**
      * Directory to store user credentials for this application.
      */
     private static final java.io.File DATA_STORE_DIR = new java.io.File(
-           // System.getProperty("user.home"),
-            "credentials/calendar-java-quickstart");
+            System.getProperty("user.home"), ".credentials/calendar-java-quickstart");
 
     /**
      * Global instance of the {@link FileDataStoreFactory}.
@@ -57,8 +58,7 @@ public class CalendarQuickStart {
      * If modifying these scopes, delete your previously saved credentials
      * at ~/.credentials/calendar-java-quickstart
      */
-    private static final List<String> SCOPES =
-            Arrays.asList(CalendarScopes.CALENDAR);
+    private static final List<String> SCOPES = Arrays.asList(CalendarScopes.CALENDAR);
 
     static {
         try {
@@ -114,12 +114,17 @@ public class CalendarQuickStart {
                 .build();
     }
 
+    private static com.google.api.services.calendar.Calendar service;
+
+    public CalendarQuickStart() throws IOException {
+        service = getCalendarService();
+    }
+
     public static void main(String[] args) throws IOException {
         // Build a new authorized API client service.
         // Note: Do not confuse this class with the
         //   com.google.api.services.calendar.model.Calendar class.
-        com.google.api.services.calendar.Calendar service =
-                getCalendarService();
+
 
         // List the next 10 events from the primary calendar.
         DateTime now = new DateTime(System.currentTimeMillis());
@@ -142,6 +147,77 @@ public class CalendarQuickStart {
                 System.out.printf("%s (%s)\n", event.getSummary(), start);
             }
         }
+
+
+        Event event = new Event()
+                .setSummary("Google I/O 2015")
+                .setLocation("800 Howard St., San Francisco, CA 94103")
+                .setDescription("A chance to hear more about Google's developer products.");
+
+        DateTime startDateTime = new DateTime("2015-05-28T09:00:00-07:00");
+        EventDateTime start = new EventDateTime()
+                .setDateTime(startDateTime)
+                .setTimeZone("America/Los_Angeles");
+        event.setStart(start);
+
+        DateTime endDateTime = new DateTime("2015-05-28T17:00:00-07:00");
+        EventDateTime end = new EventDateTime()
+                .setDateTime(endDateTime)
+                .setTimeZone("America/Los_Angeles");
+        event.setEnd(end);
     }
 
+    public void createEventsForCourse(Course course, String calendarId) throws IOException {
+        for (CourseMeeting meeting : course.getMeetings()) {
+            Event event = eventOf(course, meeting);
+            service.events().insert(calendarId,event);
+        }
+    }
+
+    private static Event eventOf(Course course, CourseMeeting meeting) {
+        EventDateTime start = new EventDateTime().setDateTime(new DateTime(meeting.getStart()));
+        EventDateTime end = new EventDateTime().setDateTime(new DateTime(meeting.getEnd()));
+
+
+        return new Event().setSummary(course.getName())
+                .setLocation("049 SW Porter St, Portland, OR 97201")
+                .setDescription(course.getId() + " section [" + course.getSection() + "]")
+                .setStart(start)
+                .setEnd(end);
+    }
+
+    public CalendarListEntry findCalendarId(com.google.api.services.calendar.Calendar service, String calendarName) throws IOException {
+        String pageToken = null;
+        do {
+            CalendarList calendarList = service.calendarList().list().setPageToken(pageToken).execute();
+            List<CalendarListEntry> stuff = calendarList.getItems();
+
+            for (CalendarListEntry calendarListEntry : stuff) {
+                if (calendarListEntry.getSummary().equalsIgnoreCase(calendarName)) {
+                    return calendarListEntry;
+                }
+            }
+            pageToken = calendarList.getNextPageToken();
+        } while (pageToken != null);
+
+        return null;
+    }
+
+    public com.google.api.services.calendar.model.Calendar createCalendar(String name) throws IOException {
+        // Create a new calendar
+        com.google.api.services.calendar.model.Calendar calendar = new com.google.api.services.calendar.model.Calendar();
+        calendar.setSummary(name);
+        calendar.setTimeZone("America/Los_Angeles");
+
+// Insert the new calendar
+        com.google.api.services.calendar.model.Calendar createdCalendar = service.calendars().insert(calendar).execute();
+
+        return createdCalendar;
+    }
+
+    public void createCalendarAndInsertCourse(Course course) throws IOException {
+        com.google.api.services.calendar.model.Calendar createCalendar = createCalendar(course.getName());
+
+        createEventsForCourse(course, createCalendar.getId());
+    }
 }
