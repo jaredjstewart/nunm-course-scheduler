@@ -216,9 +216,4 @@ public class CalendarQuickStart {
         return createdCalendar;
     }
 
-    public void createCalendarAndInsertCourse(Course course) throws IOException {
-        com.google.api.services.calendar.model.Calendar createCalendar = createCalendar(course.getName());
-
-        createEventsForCourse(course, createCalendar.getId());
-    }
 }

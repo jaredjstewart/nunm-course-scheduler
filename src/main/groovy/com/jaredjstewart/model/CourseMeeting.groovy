@@ -2,6 +2,8 @@ package com.jaredjstewart.model
 
 import org.joda.time.Interval
 
+import java.time.LocalDateTime
+
 class CourseMeeting {
   Date start
   Date end
