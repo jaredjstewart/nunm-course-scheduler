@@ -40,6 +40,7 @@ class Main {
 
     def workingCombos = combinations.findAll { !hasConflicts(it)}
 
+    System.out.println("All working combinations found.")
     CalendarQuickStart calendarQuickStart = new CalendarQuickStart();
       Course course = workingCombos.take(1).first().first();
 //    Calendar createdCalendar = calendarQuickStart.createCalendar("numnCourseScheduler");

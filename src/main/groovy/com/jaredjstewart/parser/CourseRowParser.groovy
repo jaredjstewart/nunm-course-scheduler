@@ -7,11 +7,17 @@ import org.joda.time.Interval
 import org.jsoup.select.Elements
 
 import java.text.SimpleDateFormat
+import java.time.DayOfWeek
+import java.time.LocalDate
+import java.time.ZoneId
+import java.time.temporal.TemporalAdjusters
 import java.util.regex.Matcher
 
 class CourseRowParser {
   private static final SimpleDateFormat sdf = new SimpleDateFormat("EEE h:mma");
-
+  private static LocalDate previousMonday = LocalDate.now( ZoneId.of( "America/Montreal" ) ).with( TemporalAdjusters
+          .next(
+  DayOfWeek.MONDAY ) );
   public static Course parse(Elements tds) {
     String times = tds.get(6).text().replaceAll("\n", "")
     if (times.contains("TBD") || times.contains("Unassigned")) {
@@ -52,8 +58,15 @@ class CourseRowParser {
       String startTime = matcher[0][2]
       String endTime = matcher[0][3]
 
-      Date startDate = sdf.parse("$day $startTime")
+
+
+      Date startDate = sdf.parse("$day $startTime ")
+
+        previousMonday.plusDays(dayToInt(day)).
       Date endDate = sdf.parse("$day $endTime")
+
+        LocalDate localDate
+        ;
 
 
         new CourseMeeting(start: startDate, end: endDate, interval: new Interval(new DateTime(startDate), new DateTime(endDate)))
@@ -62,6 +75,10 @@ class CourseRowParser {
       }
     }
 
+  }
+
+  private static int dayToInt(String day) {
+    return [ "MON", "TUE", "WED", "THU", "FRI"].indexOf(day);
   }
 
 }
